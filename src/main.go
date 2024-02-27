@@ -1,4 +1,4 @@
-package src
+package main
 
 import "com.tuntun.rangers/service/chaindata/src/cli"
 
