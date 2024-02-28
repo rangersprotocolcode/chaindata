@@ -5,7 +5,10 @@ import (
 	"com.tuntun.rangers/service/chaindata/src/middleware/log"
 	"context"
 	"fmt"
+	"github.com/ethereum/go-ethereum/accounts/abi"
+	"github.com/ethereum/go-ethereum/common/hexutil"
 	"github.com/ethereum/go-ethereum/core/types"
+	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/ethereum/go-ethereum/ethclient"
 	"math/big"
 	"strconv"
@@ -36,7 +39,10 @@ type ethModule struct {
 	blockTimer  *time.Timer
 	clientTimer *time.Timer
 
-	contracts map[string]byte
+	contracts     map[string]byte
+	abi           abi.ABI
+	event         abi.Event
+	transferTopic string
 
 	lock sync.Mutex
 
@@ -52,6 +58,16 @@ func (self *ethModule) info() string {
 
 func (self *ethModule) start(name, addresses string) {
 	self.name = name
+
+	abi, err := abi.JSON(strings.NewReader(abiData))
+	if err != nil {
+		self.logger.Errorf("fail to start. name: %s, err: %s", name, err)
+		return
+	}
+	self.abi = abi
+	self.event = abi.Events[transferName]
+	self.transferTopic = hexutil.Encode(crypto.Keccak256([]byte(self.event.Sig)))
+
 	self.exit = make(chan byte)
 	self.closed = false
 	self.lock = sync.Mutex{}

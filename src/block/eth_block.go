@@ -4,7 +4,6 @@ import (
 	common2 "com.tuntun.rangers/service/chaindata/src/common"
 	"com.tuntun.rangers/service/chaindata/src/middleware/mysql"
 	"context"
-	"fmt"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/ethclient"
@@ -63,7 +62,7 @@ func (self *ethModule) processBlock() {
 		}
 
 		isEvent := false
-		addressList := make([]*common.Address, 0)
+		addressList := make([]common.Address, 0)
 		blockhash := block.Hash().String()
 		ts := strconv.FormatUint(block.Time(), 10)
 		for _, tx := range block.Transactions() {
@@ -74,13 +73,11 @@ func (self *ethModule) processBlock() {
 			toAddr := tx.To().String()
 			if _, ok := self.contracts[strings.ToLower(toAddr)]; ok {
 				isEvent = true
-				addressList = append(addressList, tx.To())
+				addressList = append(addressList, *tx.To())
 				continue
 			}
 
 			txHash := tx.Hash().String()
-
-			fmt.Println(tx.Type())
 
 			v, r, s := tx.RawSignatureValues()
 
@@ -103,7 +100,7 @@ func (self *ethModule) processBlock() {
 		}
 
 		if isEvent {
-			self.processEvent(i, addressList)
+			self.processEvent(i, blockhash, ts, addressList, client)
 		}
 
 		self.lastBlock = i
