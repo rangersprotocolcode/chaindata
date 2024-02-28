@@ -113,13 +113,6 @@ package mysql
 //
 
 func InsertLogs(height int64, chainid, blockhash, ts, txhash, fromaddr, toaddr, value, contract string) {
-	tx, err := mysqlDBLog.Begin()
-	if err != nil {
-		logger.Errorf("fail to begin. chainId: %s, height: %d, blockhash: %s, txhash: %s", chainid, height, blockhash, txhash)
-		return
-	}
-	defer tx.Commit()
-
 	stmt, err := mysqlDBLog.Prepare("replace INTO chaindata(chainid,height,blockhash,ts,txhash,fromaddr,toaddr,`value`, contract) values(?,?,?,?,?,?,?,?,?)")
 	if err != nil {
 		logger.Errorf("fail to prepare. chainId: %s, height: %d, blockhash: %s, txhash: %s", chainid, height, blockhash, txhash)

@@ -33,7 +33,7 @@ var (
 
 func InitMySql() {
 	mkWorkingDir()
-	logger = log.GetLoggerByIndex(log.MysqlLogConfig)
+	logger = log.GetLoggerByIndex(log.MysqlLogConfig, "")
 	dsn := fmt.Sprintf("file:storage/logs/logs.db?mode=rwc&_journal_mode=WAL&_cache_size=-500000")
 	db, err := sql.Open("sqlite3", dsn)
 	if err != nil {

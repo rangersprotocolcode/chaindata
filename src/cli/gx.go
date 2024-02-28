@@ -1,6 +1,8 @@
 package cli
 
 import (
+	"com.tuntun.rangers/service/chaindata/src/block"
+	"com.tuntun.rangers/service/chaindata/src/common"
 	"com.tuntun.rangers/service/chaindata/src/middleware/log"
 	"com.tuntun.rangers/service/chaindata/src/middleware/mysql"
 	"fmt"
@@ -12,10 +14,6 @@ import (
 
 const (
 	version = "0.0.1"
-
-	instanceSection = "instance"
-
-	indexKey = "index"
 )
 
 type GX struct {
@@ -41,6 +39,7 @@ func (gx *GX) Run() {
 	// mine
 	startCmd := app.Command("start", "service start")
 	//mysqlAddr := startCmd.Flag("mysql", "the mysql addr").String()
+	file := startCmd.Flag("config", "config file").Default("chain.ini").String()
 
 	command, err := app.Parse(os.Args[1:])
 
@@ -61,7 +60,9 @@ func (gx *GX) Run() {
 
 		fmt.Println("Welcome to chaindata service")
 
+		common.InitConf(*file)
 		mysql.InitMySql()
+		block.Init()
 	}
 
 	<-quitChan
@@ -72,6 +73,7 @@ func (gx *GX) handleExit(ctrlC <-chan bool, quit chan<- bool) {
 	fmt.Println("exiting...")
 
 	if gx.init {
+		block.Close()
 		mysql.CloseMysql()
 		log.Close()
 		quit <- true

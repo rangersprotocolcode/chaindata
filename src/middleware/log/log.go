@@ -30,7 +30,7 @@ func GetLogger(config string) Logger {
 	return r
 }
 
-func GetLoggerByIndex(config string) Logger {
+func GetLoggerByIndex(config, index string) Logger {
 	key := getKey(config)
 	lock.Lock()
 	r := logManager[key]
@@ -40,7 +40,7 @@ func GetLoggerByIndex(config string) Logger {
 		if config == "" {
 			config = DefaultConfig
 		}
-		config = strings.Replace(config, "LOG_INDEX", "", 1)
+		config = strings.Replace(config, "LOG_INDEX", index, 1)
 		l := newLoggerByConfig(config)
 		register(getKey(config), l)
 		return l

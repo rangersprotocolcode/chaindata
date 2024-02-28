@@ -25,6 +25,8 @@ import (
 )
 
 type ConfManager interface {
+	GetStrings(section string) map[string]string
+
 	// GetString read basic conf from tas.conf file
 	GetString(section string, key string, defaultValue string) string
 	GetBool(section string, key string, defaultValue bool) bool
@@ -73,7 +75,7 @@ type SectionConfFileManager struct {
 
 var GlobalConf ConfManager
 
-func initConf(path string) {
+func InitConf(path string) {
 	if GlobalConf == nil {
 		GlobalConf = newConfINIManager(path)
 	}
@@ -140,6 +142,13 @@ func (sfm *SectionConfFileManager) SetInt(key string, value int) {
 
 func (sfm *SectionConfFileManager) Del(key string) {
 	sfm.cfm.Del(sfm.section, key)
+}
+
+func (cs *ConfFileManager) GetStrings(section string) map[string]string {
+	cs.lock.RLock()
+	defer cs.lock.RUnlock()
+
+	return cs.dict[section]
 }
 
 func (cs *ConfFileManager) GetString(section string, key string, defaultValue string) string {
