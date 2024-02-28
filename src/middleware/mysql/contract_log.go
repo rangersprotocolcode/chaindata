@@ -78,7 +78,7 @@ func InsertLogs(height int64, chainid, blockhash, ts, txhash, fromaddr, toaddr, 
 
 	row, _ := result.RowsAffected()
 	lastId, _ := result.LastInsertId()
-	logger.Infof("inserted. chainId: %s, height: %d, blockhash: %s,  txhash: %s, lines: %d, lastId: %d", chainid, height, blockhash, txhash, row, lastId)
+	logger.Infof("inserted. chainId: %s, height: %d, blockhash: %s, txhash: %s, lines: %d, lastId: %d", chainid, height, blockhash, txhash, row, lastId)
 }
 
 type item struct {
