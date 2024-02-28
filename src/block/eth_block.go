@@ -7,7 +7,6 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/crypto"
-	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/ethereum/go-ethereum/rlp"
 	"golang.org/x/crypto/sha3"
 	"math/big"
@@ -68,16 +67,20 @@ func (self *ethModule) processBlock() {
 
 	self.logger.Debugf("start getting blocks. from %d to %d", self.lastBlock, last)
 	for i := self.lastBlock + 1; i < last; i++ {
-		block := self.getBlock(i, client)
+		block, blockhash, txFroms, txHashes := self.getBlock(i, client)
 		if nil == block {
 			return
 		}
 
 		isEvent := false
 		addressList := make([]common.Address, 0)
-		blockhash := block.Hash().String()
+		blockhashString := block.Hash().String()
+		if nil != blockhash {
+			blockhashString = blockhash.String()
+		}
+
 		ts := strconv.FormatUint(block.Time(), 10)
-		for _, tx := range block.Transactions() {
+		for index, tx := range block.Transactions() {
 			if tx == nil || tx.To() == nil {
 				continue
 			}
@@ -89,12 +92,16 @@ func (self *ethModule) processBlock() {
 				continue
 			}
 
-			txHash := tx.Hash().String()
-			var hash common.Hash
+			if nil != txFroms[index] {
+				fromAddr := txFroms[index].String()
+				txhash := txHashes[index].String()
+				mysql.InsertLogs(i, self.chainId, blockhashString, ts, txhash, fromAddr, toAddr, tx.Value().String(), "")
+				continue
+			}
 
+			var hash common.Hash
 			v, r, s := tx.RawSignatureValues()
 			V := v
-
 			if tx.Protected() {
 				V = new(big.Int).Sub(v, new(big.Int).Mul(tx.ChainId(), big.NewInt(2)))
 				V.Sub(V, big8)
@@ -118,18 +125,19 @@ func (self *ethModule) processBlock() {
 					tx.Data(),
 				})
 			}
-
 			fromAddr, err := common2.RecoverPlain(hash, r, s, V)
+
+			txHash := tx.Hash().String()
 			if nil != err {
 				self.logger.Errorf("fail to calc fromAddr, txhash: %s", txHash)
 			} else {
-				mysql.InsertLogs(i, self.chainId, blockhash, ts, txHash, fromAddr.String(), toAddr, tx.Value().String(), "")
+				mysql.InsertLogs(i, self.chainId, blockhashString, ts, txHash, fromAddr.String(), toAddr, tx.Value().String(), "")
 			}
 
 		}
 
 		if isEvent {
-			self.processEvent(i, blockhash, ts, addressList, client)
+			self.processEvent(i, blockhashString, ts, addressList, client)
 		}
 
 		self.lastBlock = i
@@ -137,10 +145,13 @@ func (self *ethModule) processBlock() {
 	}
 }
 
-func (self *ethModule) getBlock(i int64, client *ethclient.Client) *types.Block {
+func (self *ethModule) getBlock(i int64, client *Client) (*types.Block, *common.Hash, []*common.Address, []*common.Hash) {
 	var (
-		block *types.Block
-		err   error
+		block    *types.Block
+		hash     *common.Hash
+		txFroms  []*common.Address
+		txHashes []*common.Hash
+		err      error
 	)
 	ch := make(chan byte, 1)
 
@@ -148,7 +159,7 @@ func (self *ethModule) getBlock(i int64, client *ethclient.Client) *types.Block 
 	defer cancel()
 
 	go func() {
-		block, err = client.BlockByNumber(ctx, big.NewInt(i))
+		block, hash, txFroms, txHashes, err = client.BlockByNumber(ctx, big.NewInt(i))
 		ch <- 0
 	}()
 
@@ -157,14 +168,14 @@ func (self *ethModule) getBlock(i int64, client *ethclient.Client) *types.Block 
 		if err != nil {
 			self.logger.Errorf("fail to get block, err: %s, close client and reconnect", err)
 			self.closeClient()
-			return nil
+			return nil, nil, nil, nil
 		}
 
-		return block
+		return block, hash, txFroms, txHashes
 	case <-ctx.Done():
 		self.logger.Errorf("fail to get blockHeader, err: timeout, close client and reconnect")
 		self.closeClient()
-		return nil
+		return nil, nil, nil, nil
 	}
 }
 

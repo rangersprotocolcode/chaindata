@@ -9,7 +9,6 @@ import (
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/crypto"
-	"github.com/ethereum/go-ethereum/ethclient"
 	"math/big"
 	"strconv"
 	"strings"
@@ -27,7 +26,7 @@ type ethModule struct {
 	name    string
 	chainId string
 
-	client *ethclient.Client
+	client *Client
 
 	// last block from client
 	lastBlockFromClient int64
@@ -183,13 +182,13 @@ func (self *ethModule) initChainId() {
 
 }
 
-func (self *ethModule) getClient() *ethclient.Client {
+func (self *ethModule) getClient() *Client {
 	if self.client != nil {
 		return self.client
 	}
 
 	url := self.getURL()
-	client, err := ethclient.Dial(url)
+	client, err := Dial(url)
 
 	if err != nil {
 		self.logger.Errorf("fail to dial: %s", url)
@@ -225,7 +224,7 @@ func (self *ethModule) closeClient() {
 	self.client = nil
 }
 
-func (self *ethModule) getHeader(client *ethclient.Client) *types.Header {
+func (self *ethModule) getHeader(client *Client) *types.Header {
 	var (
 		header *types.Header
 		err    error
