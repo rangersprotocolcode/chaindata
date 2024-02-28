@@ -5,6 +5,7 @@ import (
 	"com.tuntun.rangers/service/chaindata/src/common"
 	"com.tuntun.rangers/service/chaindata/src/middleware/log"
 	"com.tuntun.rangers/service/chaindata/src/middleware/mysql"
+	"com.tuntun.rangers/service/chaindata/src/rpc"
 	"fmt"
 	"os"
 	"runtime"
@@ -36,10 +37,10 @@ func (gx *GX) Run() {
 	//版本号
 	versionCmd := app.Command("version", "show Rangers Service version")
 
-	// mine
 	startCmd := app.Command("start", "service start")
 	//mysqlAddr := startCmd.Flag("mysql", "the mysql addr").String()
 	file := startCmd.Flag("config", "config file").Default("chain.ini").String()
+	port := startCmd.Flag("port", "port").Default("8888").String()
 
 	command, err := app.Parse(os.Args[1:])
 
@@ -63,6 +64,7 @@ func (gx *GX) Run() {
 		common.InitConf(*file)
 		mysql.InitMySql()
 		block.Init()
+		rpc.Init(*port)
 	}
 
 	<-quitChan

@@ -34,7 +34,7 @@ var (
 func InitMySql() {
 	mkWorkingDir()
 	logger = log.GetLoggerByIndex(log.MysqlLogConfig, "")
-	dsn := fmt.Sprintf("file:storage/logs/logs.db?mode=rwc&_journal_mode=WAL&_cache_size=-500000")
+	dsn := fmt.Sprintf("file:storage/chaindata.db?mode=rwc&_journal_mode=WAL&_cache_size=-500000")
 	db, err := sql.Open("sqlite3", dsn)
 	if err != nil {
 		panic(err)
@@ -67,7 +67,7 @@ func InitMySql() {
 }
 
 func mkWorkingDir() {
-	path := "storage/logs"
+	path := "storage"
 	_, err := os.Stat(path)
 	if err == nil {
 		return

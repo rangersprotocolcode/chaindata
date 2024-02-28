@@ -38,5 +38,5 @@ require (
 	github.com/cihub/seelog v0.0.0-20170130134532-f561c5e57575
 	github.com/ethereum/go-ethereum v1.13.14
 	github.com/glacjay/goini v0.0.0-20161120062552-fd3024d87ee2
-	github.com/mattn/go-sqlite3 v1.10.0
+	github.com/mattn/go-sqlite3 v1.14.22
 )

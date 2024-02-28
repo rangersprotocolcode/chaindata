@@ -2,7 +2,6 @@ package common
 
 import (
 	"errors"
-	"fmt"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/crypto"
 	"math/big"
@@ -40,6 +39,6 @@ func RecoverPlain(sighash common.Hash, R, S, Vb *big.Int) (common.Address, error
 
 	h := crypto.Keccak256(pub[1:])[12:]
 	addr := common.BytesToAddress(h)
-	fmt.Println(addr.String())
+
 	return addr, nil
 }

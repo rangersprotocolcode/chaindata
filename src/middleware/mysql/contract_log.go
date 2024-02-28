@@ -16,101 +16,51 @@
 
 package mysql
 
-//func SelectLogs(from, to uint64, contractAddresses []common.Address) []*types.Log {
-//	if nil == mysqlDBLog {
-//		return nil
-//	}
-//
-//	sql := "select height,logindex, blockhash,txhash,contractaddress,topic,data FROM contractlogs WHERE (height>=? and height<=?) "
-//	if 0 != len(contractAddresses) {
-//		sql += "and( "
-//		for _, contractAddress := range contractAddresses {
-//			sql += " contractaddress = \"" + contractAddress.GetHexString() + "\" " + "or"
-//		}
-//		sql = sql[:len(sql)-2] + ")"
-//	}
-//
-//	rows, err := mysqlDBLog.Query(sql, from, to)
-//	if err != nil {
-//		return nil
-//	}
-//	defer rows.Close()
-//
-//	result := make([]*types.Log, 0)
-//	for rows.Next() {
-//		var (
-//			height, index                                   uint64
-//			blockhash, txhash, contractaddress, topic, data string
-//		)
-//		err := rows.Scan(&height, &index, &blockhash, &txhash, &contractaddress, &topic, &data)
-//		if err != nil {
-//			logger.Errorf("scan failed, err: %v", err)
-//			return nil
-//		}
-//
-//		log := types.Log{
-//			Address:     common.HexToAddress(contractaddress),
-//			Data:        common.FromHex(data),
-//			TxHash:      common.HexToHash(txhash),
-//			BlockHash:   common.HexToHash(blockhash),
-//			BlockNumber: height,
-//			Index:       uint(index),
-//		}
-//
-//		json.Unmarshal(utility.StrToBytes(topic), &log.Topics)
-//		result = append(result, &log)
-//	}
-//
-//	return result
-//}
-//
-//func SelectLogsByHash(blockhash common.Hash, contractAddresses []common.Address) []*types.Log {
-//	if nil == mysqlDBLog {
-//		return nil
-//	}
-//
-//	sql := "select height,logindex, blockhash,txhash,contractaddress,topic,data FROM contractlogs WHERE blockhash = ? "
-//	if 0 != len(contractAddresses) {
-//		sql += "and( "
-//		for _, contractAddress := range contractAddresses {
-//			sql += " contractaddress = \"" + contractAddress.GetHexString() + "\" " + "or"
-//		}
-//		sql = sql[:len(sql)-2] + ")"
-//	}
-//
-//	rows, err := mysqlDBLog.Query(sql, blockhash.Hex())
-//	if err != nil {
-//		return nil
-//	}
-//	defer rows.Close()
-//
-//	result := make([]*types.Log, 0)
-//	for rows.Next() {
-//		var (
-//			height, index                                   uint64
-//			blockhash, txhash, contractaddress, topic, data string
-//		)
-//		err := rows.Scan(&height, &index, &blockhash, &txhash, &contractaddress, &topic, &data)
-//		if err != nil {
-//			logger.Errorf("scan failed, err: %v", err)
-//			return nil
-//		}
-//
-//		log := types.Log{
-//			Address:     common.HexToAddress(contractaddress),
-//			Data:        common.FromHex(data),
-//			TxHash:      common.HexToHash(txhash),
-//			BlockHash:   common.HexToHash(blockhash),
-//			BlockNumber: height,
-//			Index:       uint(index),
-//		}
-//		json.Unmarshal(utility.StrToBytes(topic), &log.Topics)
-//		result = append(result, &log)
-//	}
-//
-//	return result
-//}
-//
+func Count(addr, chainId string) uint64 {
+	sql := "select count(*) FROM chaindata WHERE (fromaddr = ? and chainid = ?);"
+	rows, err := mysqlDBLog.Query(sql, addr, chainId)
+	if nil != err {
+		logger.Errorf("fail to count, %s, %s", addr, chainId)
+		return 0
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var result uint64
+		err := rows.Scan(&result)
+		if err != nil {
+			logger.Errorf("fail to scan, %s, %s", addr, chainId)
+			return 0
+		}
+		return result
+	}
+
+	return 0
+}
+
+func Query(addr, chainId string, page, pageSize uint64) []item {
+	sql := "select height,blockhash,ts,txhash, toaddr,`value`,contract FROM chaindata WHERE (fromaddr = ? and chainid = ?) limit ?, ?;"
+	rows, err := mysqlDBLog.Query(sql, addr, chainId, page*pageSize, pageSize)
+	if nil != err {
+		logger.Errorf("fail to count, %s, %s", addr, chainId)
+		return nil
+	}
+	defer rows.Close()
+
+	result := make([]item, 0)
+	for rows.Next() {
+		var data item
+		err := rows.Scan(&data.Height, &data.Blockhash, &data.Ts, &data.Txhash, &data.Toaddr, &data.Value, &data.Contract)
+		if err != nil {
+			logger.Errorf("fail to scan, %s, %s", addr, chainId)
+			return nil
+		}
+
+		result = append(result, data)
+	}
+
+	return result
+}
 
 func InsertLogs(height int64, chainid, blockhash, ts, txhash, fromaddr, toaddr, value, contract string) {
 	stmt, err := mysqlDBLog.Prepare("replace INTO chaindata(chainid,height,blockhash,ts,txhash,fromaddr,toaddr,`value`, contract) values(?,?,?,?,?,?,?,?,?)")
@@ -129,4 +79,14 @@ func InsertLogs(height int64, chainid, blockhash, ts, txhash, fromaddr, toaddr, 
 	row, _ := result.RowsAffected()
 	lastId, _ := result.LastInsertId()
 	logger.Infof("inserted. chainId: %s, height: %d, blockhash: %s,  txhash: %s, lines: %d, lastId: %d", chainid, height, blockhash, txhash, row, lastId)
+}
+
+type item struct {
+	Height    string `json:"height"`
+	Blockhash string `json:"blockhash"`
+	Ts        string `json:"timestamp"`
+	Txhash    string `json:"txhash"`
+	Toaddr    string `json:"toaddr"`
+	Value     string `json:"value"`
+	Contract  string `json:"contract"`
 }

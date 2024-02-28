@@ -27,7 +27,6 @@ func Init() {
 	}
 
 	chainContracts := common.GlobalConf.GetStrings(contracts)
-
 	for chain, rpc := range chainRpcList {
 		key := strings.ToLower(chain)
 		rpcList := strings.Split(rpc, ",")
