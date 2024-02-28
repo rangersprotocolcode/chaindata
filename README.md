@@ -1,10 +1,13 @@
 # chaindata
-## Start
+## 0. Compile
+make
+
+## 1. Start
 ### using default(chain.ini and port 8888)
 ./chaindata start
 
-## Service
-### Count
+## 2. Service
+### 2.1 Count
 #### httpRequest
 two parameters needed here:
 - chainId, chain for querying
@@ -14,7 +17,7 @@ example: curl 'http://192.168.2.172:8888/count?chainId=11155111&&addr=0x00000000
 #### httpResponse
 {"status":0,"result":5221}
 
-### Query
+### 2.2 Query
 #### httpRequest
 four parameters needed here:
 - chainId, chain for querying
