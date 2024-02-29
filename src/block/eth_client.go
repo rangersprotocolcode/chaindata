@@ -54,7 +54,7 @@ type ethModule struct {
 }
 
 func (self *ethModule) info() string {
-	return fmt.Sprintf("%s|%d", self.chainId, self.lastBlock)
+	return fmt.Sprintf("%s|%s|%d", self.name, self.chainId, self.lastBlock)
 }
 
 func (self *ethModule) start(name, addresses string) {

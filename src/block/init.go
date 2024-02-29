@@ -14,12 +14,12 @@ const (
 )
 
 var (
-	chainClient map[string]*ethModule
-	closed      = false
+	chainClients map[string]*ethModule
+	closed       = false
 )
 
 func Init() {
-	chainClient := make(map[string]*ethModule, 4)
+	chainClients = make(map[string]*ethModule, 4)
 
 	chainRpcList := common.GlobalConf.GetStrings(chains)
 	if 0 == len(chainRpcList) {
@@ -33,7 +33,7 @@ func Init() {
 		module := ethModule{
 			rpcList: rpcList,
 		}
-		chainClient[key] = &module
+		chainClients[key] = &module
 
 		module.start(key, chainContracts[key])
 	}
@@ -43,22 +43,21 @@ func Init() {
 
 func Close() {
 	closed = true
-	for _, module := range chainClient {
+	for _, module := range chainClients {
 		module.close()
 	}
 }
 
 func logLoop() {
-	ticker := time.NewTicker(time.Second * 10)
 	monitorLogger := log.GetLoggerByIndex(log.MonitorLogConfig, "")
 
 	go func() {
-		for _ = range ticker.C {
+		for range time.Tick(time.Second * 10) {
 			if closed {
 				return
 			}
 
-			for _, module := range chainClient {
+			for _, module := range chainClients {
 				monitorLogger.Info(module.info())
 			}
 		}
