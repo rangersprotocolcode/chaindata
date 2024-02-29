@@ -11,7 +11,6 @@ import (
 	"golang.org/x/crypto/sha3"
 	"math/big"
 	"strconv"
-	"strings"
 	"sync"
 	"time"
 )
@@ -72,8 +71,6 @@ func (self *ethModule) processBlock() {
 			return
 		}
 
-		isEvent := false
-		addressList := make([]common.Address, 0)
 		blockhashString := block.Hash().String()
 		if nil != blockhash {
 			blockhashString = blockhash.String()
@@ -86,12 +83,6 @@ func (self *ethModule) processBlock() {
 			}
 
 			toAddr := tx.To().String()
-			if _, ok := self.contracts[strings.ToLower(toAddr)]; ok {
-				isEvent = true
-				addressList = append(addressList, *tx.To())
-				continue
-			}
-
 			if nil != txFroms[index] {
 				fromAddr := txFroms[index].String()
 				txhash := txHashes[index].String()
@@ -136,8 +127,8 @@ func (self *ethModule) processBlock() {
 
 		}
 
-		if isEvent {
-			self.processEvent(i, blockhashString, ts, addressList, client)
+		if 0 != len(self.list) {
+			self.processEvent(i, blockhashString, ts, client)
 		}
 
 		self.lastBlock = i

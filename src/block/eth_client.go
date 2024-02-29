@@ -6,6 +6,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/ethereum/go-ethereum/accounts/abi"
+	common2 "github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/crypto"
@@ -26,6 +27,8 @@ type ethModule struct {
 	name    string
 	chainId string
 
+	list []common2.Address
+
 	client *Client
 
 	// last block from client
@@ -38,7 +41,6 @@ type ethModule struct {
 	blockTimer  *time.Timer
 	clientTimer *time.Timer
 
-	contracts     map[string]byte
 	abi           abi.ABI
 	event         abi.Event
 	transferTopic string
@@ -75,10 +77,14 @@ func (self *ethModule) start(name, addresses string) {
 	heightStr := common.GlobalConf.GetString(chainsHeight, self.name, "0")
 	self.lastBlock, _ = strconv.ParseInt(heightStr, 10, 32)
 
-	self.contracts = make(map[string]byte)
+	self.list = make([]common2.Address, 0)
+	if self.name == "rpg" {
+		self.list = append(self.list, rpgAddr)
+	}
+
 	if 0 != len(addresses) {
 		for _, address := range strings.Split(addresses, ",") {
-			self.contracts[strings.ToLower(strings.TrimSpace(address))] = 1
+			self.list = append(self.list, common2.HexToAddress(strings.TrimSpace(address)))
 		}
 	}
 
