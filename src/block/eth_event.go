@@ -49,7 +49,7 @@ func (self *ethModule) processEvent(i int64, blockhash, ts string, client *Clien
 		if 0 == bytes.Compare(rpgAddrByte, log.Address.Bytes()) {
 			contractAddr = ""
 		}
-		mysql.InsertLogs(i, self.chainId, blockhash, ts, log.TxHash.String(), fromAddr.String(), toAddr.String(), value.String(), contractAddr)
+		mysql.InsertLogs(i, self.chainId, blockhash, ts, log.TxHash.String(), fromAddr.String(), toAddr.String(), value.String(), contractAddr, "0", "0")
 	}
 
 }

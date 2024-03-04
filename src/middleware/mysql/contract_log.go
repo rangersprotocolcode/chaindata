@@ -39,7 +39,7 @@ func Count(addr, chainId string) uint64 {
 }
 
 func Query(addr, chainId string, page, pageSize uint64) []item {
-	sql := "select height,blockhash,ts,txhash, toaddr,`value`,contract FROM chaindata WHERE (fromaddr = ? and chainid = ?) limit ?, ?;"
+	sql := "select height,blockhash,ts,txhash, toaddr,`value`,contract,gas,gasprice FROM chaindata WHERE (fromaddr = ? and chainid = ?) limit ?, ?;"
 	rows, err := mysqlDBLog.Query(sql, addr, chainId, page*pageSize, pageSize)
 	if nil != err {
 		logger.Errorf("fail to count, %s, %s", addr, chainId)
@@ -50,7 +50,7 @@ func Query(addr, chainId string, page, pageSize uint64) []item {
 	result := make([]item, 0)
 	for rows.Next() {
 		var data item
-		err := rows.Scan(&data.Height, &data.Blockhash, &data.Ts, &data.Txhash, &data.Toaddr, &data.Value, &data.Contract)
+		err := rows.Scan(&data.Height, &data.Blockhash, &data.Ts, &data.Txhash, &data.Toaddr, &data.Value, &data.Contract, &data.Gas, &data.Gasprice)
 		if err != nil {
 			logger.Errorf("fail to scan, %s, %s", addr, chainId)
 			return nil
@@ -62,15 +62,15 @@ func Query(addr, chainId string, page, pageSize uint64) []item {
 	return result
 }
 
-func InsertLogs(height int64, chainid, blockhash, ts, txhash, fromaddr, toaddr, value, contract string) {
-	stmt, err := mysqlDBLog.Prepare("replace INTO chaindata(chainid,height,blockhash,ts,txhash,fromaddr,toaddr,`value`, contract) values(?,?,?,?,?,?,?,?,?)")
+func InsertLogs(height int64, chainid, blockhash, ts, txhash, fromaddr, toaddr, value, contract, gas, gasprice string) {
+	stmt, err := mysqlDBLog.Prepare("replace INTO chaindata(chainid,height,blockhash,ts,txhash,fromaddr,toaddr,`value`, contract,gas,gasprice) values(?,?,?,?,?,?,?,?,?,?,?)")
 	if err != nil {
 		logger.Errorf("fail to prepare. chainId: %s, height: %d, blockhash: %s, txhash: %s", chainid, height, blockhash, txhash)
 		return
 	}
 	defer stmt.Close()
 
-	result, err := stmt.Exec(chainid, height, blockhash, ts, txhash, fromaddr, toaddr, value, contract)
+	result, err := stmt.Exec(chainid, height, blockhash, ts, txhash, fromaddr, toaddr, value, contract, gas, gasprice)
 	if err != nil {
 		logger.Errorf("fail to exec. chainId: %s, height: %d, blockhash: %s, txhash: %s", chainid, height, blockhash, txhash)
 		return
@@ -89,4 +89,6 @@ type item struct {
 	Toaddr    string `json:"toaddr"`
 	Value     string `json:"value"`
 	Contract  string `json:"contract"`
+	Gas       string `json:"gas"`
+	Gasprice  string `json:"gasprice"`
 }

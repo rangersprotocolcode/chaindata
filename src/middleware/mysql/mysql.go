@@ -40,7 +40,7 @@ func InitMySql() {
 		panic(err)
 	}
 
-	_, err = db.Exec("CREATE TABLE if NOT EXISTS `chaindata`(id INTEGER PRIMARY KEY AUTOINCREMENT,`chainid` INTEGER NOT NULL, `height` INTEGER NOT NULL, `blockhash` varchar(66) NOT NULL, `ts` varchar(66) NOT NULL, `txhash` varchar(66) NOT NULL, `fromaddr` varchar(66) NOT NULL, `toaddr` varchar(66) NOT NULL,`value` varchar(66) NOT NULL, `contract` varchar(66) DEFAULT '',UNIQUE (`chainid`,`txhash`));")
+	_, err = db.Exec("CREATE TABLE if NOT EXISTS `chaindata`(id INTEGER PRIMARY KEY AUTOINCREMENT,`chainid` INTEGER NOT NULL, `height` INTEGER NOT NULL, `blockhash` varchar(66) NOT NULL, `ts` varchar(66) NOT NULL, `txhash` varchar(66) NOT NULL, `fromaddr` varchar(66) NOT NULL, `toaddr` varchar(66) NOT NULL,`value` varchar(66) NOT NULL, `contract` varchar(66) DEFAULT '',`gas` varchar(40) DEFAULT '',`gasprice` varchar(40) DEFAULT '', UNIQUE (`chainid`,`txhash`));")
 	if err != nil {
 		panic(err)
 	}

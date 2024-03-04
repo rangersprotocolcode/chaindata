@@ -33,5 +33,5 @@ func TestInitMySql(t *testing.T) {
 
 	InitMySql()
 
-	InsertLogs(1, "2", "3", "4", "5", "6", "7", "8", "9")
+	InsertLogs(1, "2", "3", "4", "5", "6", "7", "8", "9", "10", "11")
 }

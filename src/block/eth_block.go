@@ -83,10 +83,12 @@ func (self *ethModule) processBlock() {
 			}
 
 			toAddr := tx.To().String()
+			gas := strconv.FormatUint(tx.Gas(), 10)
+			gasPrice := tx.GasPrice().String()
 			if nil != txFroms[index] {
 				fromAddr := txFroms[index].String()
 				txhash := txHashes[index].String()
-				mysql.InsertLogs(i, self.chainId, blockhashString, ts, txhash, fromAddr, toAddr, tx.Value().String(), "")
+				mysql.InsertLogs(i, self.chainId, blockhashString, ts, txhash, fromAddr, toAddr, tx.Value().String(), "", gas, gasPrice)
 				continue
 			}
 
@@ -122,7 +124,7 @@ func (self *ethModule) processBlock() {
 			if nil != err {
 				self.logger.Errorf("fail to calc fromAddr, txhash: %s", txHash)
 			} else {
-				mysql.InsertLogs(i, self.chainId, blockhashString, ts, txHash, fromAddr.String(), toAddr, tx.Value().String(), "")
+				mysql.InsertLogs(i, self.chainId, blockhashString, ts, txHash, fromAddr.String(), toAddr, tx.Value().String(), "", gas, gasPrice)
 			}
 
 		}
