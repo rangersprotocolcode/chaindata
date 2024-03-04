@@ -1,10 +1,11 @@
 package rpc
 
 import (
-	"com.tuntun.rangers/service/chaindata/src/middleware/mysql"
 	"encoding/json"
 	"net/http"
 	"strconv"
+
+	"com.tuntun.rangers/service/chaindata/src/middleware/mysql"
 )
 
 func count(w http.ResponseWriter, r *http.Request) {
@@ -23,15 +24,17 @@ func count(w http.ResponseWriter, r *http.Request) {
 func query(w http.ResponseWriter, r *http.Request) {
 	input := getDataFromUrl(r)
 	addr := input.addr
+	to := input.to
 	chainId := input.chainId
 	pageSize := input.pageSize
+
 	if 0 == len(addr) || 0 == len(chainId) || 0 == pageSize {
 		rpcLogger.Errorf("fail to get input, %s", r.RemoteAddr)
 		w.Write(failResult("fail to get input"))
 		return
 	}
 
-	w.Write(successResult(mysql.Query(addr, chainId, input.page, pageSize)))
+	w.Write(successResult(mysql.Query(addr, to, chainId, input.page, pageSize)))
 }
 
 func getDataFromUrl(r *http.Request) *InputData {
@@ -43,7 +46,12 @@ func getDataFromUrl(r *http.Request) *InputData {
 	if ok {
 		data.addr = object[0]
 	}
-
+	///
+	object, ok = values["to"]
+	if ok {
+		data.to = object[0]
+	}
+	///
 	object, ok = values["chainId"]
 	if ok {
 		data.chainId = object[0]

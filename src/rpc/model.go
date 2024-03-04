@@ -2,6 +2,7 @@ package rpc
 
 type InputData struct {
 	addr     string `json:"addr"`
+	to       string `json:"to"`
 	chainId  string `json:"chainId"`
 	page     uint64 `json:"page"`
 	pageSize uint64 `json:"pageSize"`

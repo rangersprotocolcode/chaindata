@@ -38,9 +38,20 @@ func Count(addr, chainId string) uint64 {
 	return 0
 }
 
-func Query(addr, chainId string, page, pageSize uint64) []item {
-	sql := "select height,blockhash,ts,txhash, toaddr,`value`,contract,gas,gasprice FROM chaindata WHERE (fromaddr = ? and chainid = ?) limit ?, ?;"
+func Query(from, to, chainId string, page, pageSize uint64) []item {
+	sql := ""
+	addr := ""
+
+	if addr != "" {
+		sql = "select height,blockhash,ts,txhash, toaddr,`value`,contract,gas,gasprice FROM chaindata WHERE (fromaddr = ? and chainid = ?) limit ?, ?;"
+		addr = from
+
+	} else if to != "" {
+		sql = "select height,blockhash,ts,txhash, toaddr,`value`,contract,gas,gasprice FROM chaindata WHERE (toaddr = ? and chainid = ?) limit ?, ?;"
+		addr = to
+	}
 	rows, err := mysqlDBLog.Query(sql, addr, chainId, page*pageSize, pageSize)
+
 	if nil != err {
 		logger.Errorf("fail to count, %s, %s", addr, chainId)
 		return nil
