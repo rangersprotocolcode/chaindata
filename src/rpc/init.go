@@ -1,9 +1,10 @@
 package rpc
 
 import (
-	"com.tuntun.rangers/service/chaindata/src/middleware/log"
 	"net/http"
 	"strings"
+
+	"com.tuntun.rangers/service/chaindata/src/middleware/log"
 )
 
 var rpcLogger log.Logger
@@ -14,6 +15,7 @@ func Init(port string) {
 	mux := http.NewServeMux()
 	mux.HandleFunc("/count", count)
 	mux.HandleFunc("/query", query)
+	mux.HandleFunc("/queryAdv", queryAdv)
 
 	go func() {
 		err := http.ListenAndServe(":"+port, cros{next: mux})

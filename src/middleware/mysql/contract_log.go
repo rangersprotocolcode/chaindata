@@ -16,6 +16,8 @@
 
 package mysql
 
+import "strings"
+
 func Count(addr, chainId string) uint64 {
 	sql := "select count(*) FROM chaindata WHERE (fromaddr = ? and chainid = ?);"
 	rows, err := mysqlDBLog.Query(sql, addr, chainId)
@@ -38,20 +40,92 @@ func Count(addr, chainId string) uint64 {
 	return 0
 }
 
-func Query(from, to, chainId string, page, pageSize uint64) []item {
-	sql := ""
-	addr := ""
+type QueryReq struct {
+	From     string
+	To       string
+	ChainId  string
+	Contract string
+	///
+	StartNumber int64
+	EndNumber   int64
+	//
+}
 
-	if addr != "" {
-		sql = "select height,blockhash,ts,txhash, toaddr,`value`,contract,gas,gasprice FROM chaindata WHERE (fromaddr = ? and chainid = ?) limit ?, ?;"
-		addr = from
-
-	} else if to != "" {
-		sql = "select height,blockhash,ts,txhash, toaddr,`value`,contract,gas,gasprice FROM chaindata WHERE (toaddr = ? and chainid = ?) limit ?, ?;"
-		addr = to
+func (s *QueryReq) Validate() bool {
+	if s.StartNumber == 0 && s.EndNumber == 0 {
+		return false
 	}
-	rows, err := mysqlDBLog.Query(sql, addr, chainId, page*pageSize, pageSize)
+	if s.From == "" && s.To == "" && s.Contract == "" {
 
+		return false
+	}
+	return true
+}
+
+func QueryAdv(req *QueryReq) []item {
+	/////
+	sql := "select height,blockhash,ts,txhash, toaddr,`value`,contract,gas,gasprice FROM chaindata WHERE "
+	args := []any{}
+
+	if req.From != "" {
+		args = append(args, req.From)
+		sql += " fromaddr = ? and "
+	}
+	if req.To != "" {
+		args = append(args, req.To)
+		sql += " toaddr = ? and "
+	}
+	if req.ChainId != "" {
+		args = append(args, req.ChainId)
+		sql += " chainid = ? and "
+	}
+	if req.Contract != "" {
+		args = append(args, req.Contract)
+		sql += " contract = ? and "
+	}
+	argsCnt := len(args)
+	if argsCnt == 0 {
+		return nil
+	}
+	//
+	if req.StartNumber != 0 {
+		args = append(args, req.StartNumber)
+		sql += " height >= ? and "
+	}
+	if req.EndNumber != 0 {
+		args = append(args, req.EndNumber)
+		sql += " height <= ? "
+	}
+	///
+	sql = strings.TrimSpace(sql)
+	sql = strings.TrimRight(sql, "and")
+	sql += ";"
+	//
+	rows, err := mysqlDBLog.Query(sql, args...)
+	if nil != err {
+		logger.Error("fail to count", req, err)
+		return nil
+	}
+	defer rows.Close()
+	//
+	result := make([]item, 0)
+	for rows.Next() {
+		var data item
+		err := rows.Scan(&data.Height, &data.Blockhash, &data.Ts, &data.Txhash, &data.Toaddr, &data.Value, &data.Contract, &data.Gas, &data.Gasprice)
+		if err != nil {
+			logger.Error("fail to count", req, err)
+			return nil
+		}
+
+		result = append(result, data)
+	}
+
+	return result
+}
+
+func Query(addr, chainId string, page, pageSize uint64) []item {
+	sql := "select height,blockhash,ts,txhash, toaddr,`value`,contract,gas,gasprice FROM chaindata WHERE (fromaddr = ? and chainid = ?) limit ?, ?;"
+	rows, err := mysqlDBLog.Query(sql, addr, chainId, page*pageSize, pageSize)
 	if nil != err {
 		logger.Errorf("fail to count, %s, %s", addr, chainId)
 		return nil

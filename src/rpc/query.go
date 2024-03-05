@@ -24,7 +24,6 @@ func count(w http.ResponseWriter, r *http.Request) {
 func query(w http.ResponseWriter, r *http.Request) {
 	input := getDataFromUrl(r)
 	addr := input.addr
-	to := input.to
 	chainId := input.chainId
 	pageSize := input.pageSize
 
@@ -34,7 +33,26 @@ func query(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	w.Write(successResult(mysql.Query(addr, to, chainId, input.page, pageSize)))
+	w.Write(successResult(mysql.Query(addr, chainId, input.page, pageSize)))
+}
+
+func queryAdv(w http.ResponseWriter, r *http.Request) {
+	input := getDataFromUrl(r)
+	req := &mysql.QueryReq{
+		From:        input.from,
+		To:          input.to,
+		Contract:    input.contract,
+		StartNumber: input.startNumber,
+		EndNumber:   input.endNumber,
+	}
+
+	if !req.Validate() {
+		rpcLogger.Error("fail to get input:", req)
+		w.Write(failResult("fail to get queryAdv input"))
+		return
+	}
+
+	w.Write(successResult(mysql.QueryAdv(req)))
 }
 
 func getDataFromUrl(r *http.Request) *InputData {
@@ -47,9 +65,17 @@ func getDataFromUrl(r *http.Request) *InputData {
 		data.addr = object[0]
 	}
 	///
+	object, ok = values["from"]
+	if ok {
+		data.from = object[0]
+	}
 	object, ok = values["to"]
 	if ok {
 		data.to = object[0]
+	}
+	object, ok = values["contract"]
+	if ok {
+		data.contract = object[0]
 	}
 	///
 	object, ok = values["chainId"]
@@ -76,7 +102,25 @@ func getDataFromUrl(r *http.Request) *InputData {
 		}
 		data.pageSize = result
 	}
-
+	///
+	object, ok = values["startNumber"]
+	if ok {
+		result, err := strconv.ParseInt(object[0], 10, 32)
+		if nil != err {
+			rpcLogger.Errorf("fail to parse page, %s", object[0])
+			return nil
+		}
+		data.startNumber = result
+	}
+	object, ok = values["endNumber"]
+	if ok {
+		result, err := strconv.ParseInt(object[0], 10, 32)
+		if nil != err {
+			rpcLogger.Errorf("fail to parse page, %s", object[0])
+			return nil
+		}
+		data.endNumber = result
+	}
 	return &data
 }
 
