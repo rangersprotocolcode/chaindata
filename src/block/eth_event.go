@@ -3,10 +3,10 @@ package block
 import (
 	"bytes"
 	"com.tuntun.rangers/service/chaindata/src/middleware/mysql"
+	"com.tuntun.rangers/service/chaindata/src/types"
 	"context"
 	"github.com/ethereum/go-ethereum"
 	"github.com/ethereum/go-ethereum/common"
-	"github.com/ethereum/go-ethereum/core/types"
 	"math/big"
 	"time"
 )
