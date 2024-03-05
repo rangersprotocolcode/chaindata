@@ -1,20 +1,21 @@
 package block
 
 import (
-	"com.tuntun.rangers/service/chaindata/src/common"
-	"com.tuntun.rangers/service/chaindata/src/middleware/log"
-	"com.tuntun.rangers/service/chaindata/src/types"
 	"context"
 	"fmt"
-	"github.com/ethereum/go-ethereum/accounts/abi"
-	common2 "github.com/ethereum/go-ethereum/common"
-	"github.com/ethereum/go-ethereum/common/hexutil"
-	"github.com/ethereum/go-ethereum/crypto"
 	"math/big"
 	"strconv"
 	"strings"
 	"sync"
 	"time"
+
+	"com.tuntun.rangers/service/chaindata/src/common"
+	"com.tuntun.rangers/service/chaindata/src/middleware/log"
+	"com.tuntun.rangers/service/chaindata/src/types"
+	"github.com/ethereum/go-ethereum/accounts/abi"
+	common2 "github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/common/hexutil"
+	"github.com/ethereum/go-ethereum/crypto"
 )
 
 const (
@@ -262,6 +263,6 @@ func (self *ethModule) getHeader(client *Client) *types.Header {
 }
 
 func (self *ethModule) updateHeight() {
-	self.logger.Infof("updateHeight: %d", self.lastBlock)
+	self.logger.Infof("chainId:%s, updateHeight: %d", self.chainId, self.lastBlock)
 	common.GlobalConf.SetString(chainsHeight, self.name, strconv.FormatInt(self.lastBlock, 10))
 }

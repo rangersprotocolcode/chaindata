@@ -17,12 +17,13 @@
 package mysql
 
 import (
-	"com.tuntun.rangers/service/chaindata/src/middleware/log"
 	"database/sql"
 	"fmt"
-	_ "github.com/mattn/go-sqlite3"
 	"os"
 	"time"
+
+	"com.tuntun.rangers/service/chaindata/src/middleware/log"
+	_ "github.com/mattn/go-sqlite3"
 )
 
 var (

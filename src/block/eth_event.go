@@ -2,13 +2,14 @@ package block
 
 import (
 	"bytes"
-	"com.tuntun.rangers/service/chaindata/src/middleware/mysql"
-	"com.tuntun.rangers/service/chaindata/src/types"
 	"context"
-	"github.com/ethereum/go-ethereum"
-	"github.com/ethereum/go-ethereum/common"
 	"math/big"
 	"time"
+
+	"com.tuntun.rangers/service/chaindata/src/middleware/mysql"
+	"com.tuntun.rangers/service/chaindata/src/types"
+	"github.com/ethereum/go-ethereum"
+	"github.com/ethereum/go-ethereum/common"
 )
 
 const (
@@ -42,7 +43,7 @@ func (self *ethModule) processEvent(i int64, blockhash, ts string, client *Clien
 			return
 		}
 
-		self.logger.Debugf("tx: %s, get transfer data: %v, from: %s, to: %s", log.TxHash.String(), out, fromAddr.String(), toAddr.String())
+		self.logger.Debugf("chainId:%s,tx: %s, get transfer data: %v, from: %s, to: %s", self.chainId, log.TxHash.String(), out, fromAddr.String(), toAddr.String())
 		value := out[0].(*big.Int)
 
 		contractAddr := log.Address.String()

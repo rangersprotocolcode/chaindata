@@ -1,18 +1,19 @@
 package block
 
 import (
-	common2 "com.tuntun.rangers/service/chaindata/src/common"
-	"com.tuntun.rangers/service/chaindata/src/middleware/mysql"
-	"com.tuntun.rangers/service/chaindata/src/types"
 	"context"
-	"github.com/ethereum/go-ethereum/common"
-	"github.com/ethereum/go-ethereum/crypto"
-	"github.com/ethereum/go-ethereum/rlp"
-	"golang.org/x/crypto/sha3"
 	"math/big"
 	"strconv"
 	"sync"
 	"time"
+
+	common2 "com.tuntun.rangers/service/chaindata/src/common"
+	"com.tuntun.rangers/service/chaindata/src/middleware/mysql"
+	"com.tuntun.rangers/service/chaindata/src/types"
+	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/crypto"
+	"github.com/ethereum/go-ethereum/rlp"
+	"golang.org/x/crypto/sha3"
 )
 
 var (
@@ -64,7 +65,7 @@ func (self *ethModule) processBlock() {
 		return
 	}
 
-	self.logger.Debugf("start getting blocks. from %d to %d", self.lastBlock, last)
+	self.logger.Debugf("chainId:%s , start getting blocks. from %d to %d", self.chainId, self.lastBlock, last)
 	for i := self.lastBlock + 1; i < last; i++ {
 		block, blockhash, txFroms, txHashes := self.getBlock(i, client)
 		if nil == block {

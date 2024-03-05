@@ -48,7 +48,6 @@ type QueryReq struct {
 	///
 	StartNumber int64
 	EndNumber   int64
-	//
 }
 
 func (s *QueryReq) Validate() bool {
@@ -123,11 +122,32 @@ func QueryAdv(req *QueryReq) []item {
 	return result
 }
 
-func Query(addr, chainId string, page, pageSize uint64) []item {
-	sql := "select height,blockhash,ts,txhash, toaddr,`value`,contract,gas,gasprice FROM chaindata WHERE (fromaddr = ? and chainid = ?) limit ?, ?;"
-	rows, err := mysqlDBLog.Query(sql, addr, chainId, page*pageSize, pageSize)
+func Query(from, to, chainId string, page, pageSize uint64) []item {
+	args := []interface{}{}
+	sql := "select height,blockhash,ts,txhash, toaddr,`value`,contract,gas,gasprice FROM chaindata WHERE "
+	if from != "" {
+		sql += " fromaddr = ? and "
+		args = append(args, from)
+	}
+	if to != "" {
+		sql += " toaddr = ? and "
+		args = append(args, to)
+	}
+	if chainId != "" {
+		sql += " chainid = ? and "
+		args = append(args, chainId)
+	}
+	//
+	sql = strings.TrimSpace(sql)
+	sql = strings.TrimRight(sql, "and")
+	///
+	sql += " limit ?, ?;"
+	args = append(args, page*pageSize)
+	args = append(args, pageSize)
+	///
+	rows, err := mysqlDBLog.Query(sql, args...)
 	if nil != err {
-		logger.Errorf("fail to count, %s, %s", addr, chainId)
+		logger.Error("fail to count,", args)
 		return nil
 	}
 	defer rows.Close()
@@ -137,7 +157,7 @@ func Query(addr, chainId string, page, pageSize uint64) []item {
 		var data item
 		err := rows.Scan(&data.Height, &data.Blockhash, &data.Ts, &data.Txhash, &data.Toaddr, &data.Value, &data.Contract, &data.Gas, &data.Gasprice)
 		if err != nil {
-			logger.Errorf("fail to scan, %s, %s", addr, chainId)
+			logger.Errorf("fail to scan, ", args)
 			return nil
 		}
 
