@@ -1,11 +1,11 @@
 package block
 
 import (
+	"com.tuntun.rangers/service/chaindata/src/types"
 	"errors"
 	"math/big"
 
 	"github.com/ethereum/go-ethereum/common"
-	"github.com/ethereum/go-ethereum/core/types"
 )
 
 // senderFromServer is a types.Signer that remembers the sender address returned by the RPC
