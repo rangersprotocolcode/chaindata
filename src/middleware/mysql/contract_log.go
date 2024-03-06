@@ -67,20 +67,20 @@ func QueryAdv(req *QueryReq) []item {
 	args := []any{}
 
 	if req.From != "" {
-		args = append(args, req.From)
-		sql += " fromaddr = ? and "
+		args = append(args, strings.ToLower(req.From))
+		sql += " lower(fromaddr) = ? and "
 	}
 	if req.To != "" {
-		args = append(args, req.To)
-		sql += " toaddr = ? and "
+		args = append(args, strings.ToLower(req.To))
+		sql += " lower(toaddr) = ? and "
 	}
 	if req.ChainId != "" {
 		args = append(args, req.ChainId)
 		sql += " chainid = ? and "
 	}
 	if req.Contract != "" {
-		args = append(args, req.Contract)
-		sql += " contract = ? and "
+		args = append(args, strings.ToLower(req.Contract))
+		sql += " lower(contract) = ? and "
 	}
 	argsCnt := len(args)
 	if argsCnt == 0 {
@@ -126,12 +126,12 @@ func Query(from, to, chainId string, page, pageSize uint64) []item {
 	args := []interface{}{}
 	sql := "select height,blockhash,ts,txhash, toaddr,`value`,contract,gas,gasprice FROM chaindata WHERE "
 	if from != "" {
-		sql += " fromaddr = ? and "
-		args = append(args, from)
+		sql += " lower(fromaddr) = ? and "
+		args = append(args, strings.ToLower(from))
 	}
 	if to != "" {
-		sql += " toaddr = ? and "
-		args = append(args, to)
+		sql += " lower(toaddr) = ? and "
+		args = append(args, strings.ToLower(to))
 	}
 	if chainId != "" {
 		sql += " chainid = ? and "
@@ -157,7 +157,7 @@ func Query(from, to, chainId string, page, pageSize uint64) []item {
 		var data item
 		err := rows.Scan(&data.Height, &data.Blockhash, &data.Ts, &data.Txhash, &data.Toaddr, &data.Value, &data.Contract, &data.Gas, &data.Gasprice)
 		if err != nil {
-			logger.Errorf("fail to scan, ", args)
+			logger.Errorf("fail to scan, %s", args)
 			return nil
 		}
 

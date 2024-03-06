@@ -53,6 +53,14 @@ func InitMySql() {
 	if err != nil {
 		panic(err)
 	}
+	_, err = db.Exec("CREATE INDEX if NOT EXISTS toddr ON chaindata (toaddr);")
+	if err != nil {
+		panic(err)
+	}
+	_, err = db.Exec("CREATE INDEX if NOT EXISTS contract ON chaindata (contract);")
+	if err != nil {
+		panic(err)
+	}
 
 	mysqlDBLog = db
 	logger.Infof("connected sqlite")
