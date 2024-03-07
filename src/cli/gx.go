@@ -65,6 +65,8 @@ func (gx *GX) Run() {
 		mysql.InitMySql()
 		block.Init()
 		rpc.Init(*port)
+
+		fmt.Println("chaindata service started")
 	}
 
 	<-quitChan
