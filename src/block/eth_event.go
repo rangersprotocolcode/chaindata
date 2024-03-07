@@ -43,8 +43,11 @@ func (self *ethModule) processEvent(i int64, blockhash, ts string, client *Clien
 			return
 		}
 
-		self.logger.Debugf("chainId:%s,tx: %s, get transfer data: %v, from: %s, to: %s", self.chainId, log.TxHash.String(), out, fromAddr.String(), toAddr.String())
+		self.logger.Debugf("chainId: %s,tx: %s, get transfer data: %v, from: %s, to: %s", self.chainId, log.TxHash.String(), out, fromAddr.String(), toAddr.String())
 		value := out[0].(*big.Int)
+		if nil == value || 0 == value.Sign() {
+			continue
+		}
 
 		contractAddr := log.Address.String()
 		if 0 == bytes.Compare(rpgAddrByte, log.Address.Bytes()) {

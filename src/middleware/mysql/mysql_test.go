@@ -17,21 +17,12 @@
 package mysql
 
 import (
-	"os"
 	"testing"
 )
 
 func TestInitMySql(t *testing.T) {
-	defer func() {
-		os.RemoveAll("logs")
-		os.RemoveAll("logs-0.db")
-		os.RemoveAll("logs-0.db-shm")
-		os.RemoveAll("logs-0.db-wal")
-		os.RemoveAll("1.ini")
-		os.RemoveAll("storage0")
-	}()
-
 	InitMySql()
 
 	InsertLogs(1, "2", "3", "4", "5", "6", "7", "8", "9", "10", "11")
+	InsertLogs(1, "2", "3", "4", "5", "6", "7", "0", "9", "10", "11")
 }

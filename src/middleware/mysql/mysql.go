@@ -61,6 +61,11 @@ func InitMySql() {
 	if err != nil {
 		panic(err)
 	}
+	sql := "delete from chaindata where `value`=" + `"0"`
+	_, err = db.Exec(sql)
+	if err != nil {
+		panic(err)
+	}
 
 	mysqlDBLog = db
 	logger.Infof("connected sqlite")
