@@ -144,6 +144,9 @@ func Query(from, to, chainId string, page, pageSize uint64) []item {
 	sql += "order by height desc limit ?, ?;"
 	args = append(args, page*pageSize)
 	args = append(args, pageSize)
+
+	logger.Infof("execute sql: %s", sql)
+
 	///
 	rows, err := mysqlDBLog.Query(sql, args...)
 	if nil != err {
