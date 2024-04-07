@@ -141,7 +141,7 @@ func Query(from, to, chainId string, page, pageSize uint64) []item {
 	sql = strings.TrimSpace(sql)
 	sql = strings.TrimRight(sql, "and")
 	///
-	sql += " limit ?, ?;"
+	sql += "order by height desc limit ?, ?;"
 	args = append(args, page*pageSize)
 	args = append(args, pageSize)
 	///

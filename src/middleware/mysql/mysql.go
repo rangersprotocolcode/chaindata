@@ -61,6 +61,10 @@ func InitMySql() {
 	if err != nil {
 		panic(err)
 	}
+	_, err = db.Exec("CREATE INDEX if NOT EXISTS height ON chaindata (height);")
+	if err != nil {
+		panic(err)
+	}
 
 	mysqlDBLog = db
 	logger.Infof("connected sqlite")
